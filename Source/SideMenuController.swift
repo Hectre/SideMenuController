@@ -35,7 +35,7 @@ public extension SideMenuController {
 	/**
 	Toggles the side pannel visible or not.
 	*/
-	public func toggle() {
+	@objc func toggle() {
 
 		if !transitionInProgress {
 			if !sidePanelVisible {
@@ -57,7 +57,7 @@ public extension SideMenuController {
 
 	- returns: Cached UIViewController or nil
 	*/
-	public func viewController(forCacheIdentifier identifier: String) -> UIViewController? {
+	func viewController(forCacheIdentifier identifier: String) -> UIViewController? {
 		return controllersCache[identifier]
 	}
 
@@ -66,7 +66,7 @@ public extension SideMenuController {
 
 	- parameter sideViewController: controller to be embedded
 	*/
-	public func embed(sideViewController controller: UIViewController) {
+	func embed(sideViewController controller: UIViewController) {
 		if sideViewController == nil {
 
 			sideViewController = controller
@@ -74,8 +74,8 @@ public extension SideMenuController {
 
 			sidePanel.addSubview(sideViewController.view)
 
-			addChildViewController(sideViewController)
-			sideViewController.didMove(toParentViewController: self)
+			addChild(sideViewController)
+			sideViewController.didMove(toParent: self)
 
 			sidePanel.isHidden = true
 		}
@@ -87,13 +87,13 @@ public extension SideMenuController {
 	- parameter centerViewController: controller to be embedded
 	- parameter cacheIdentifier: identifier for the view controllers cache
 	*/
-	public func embed(centerViewController controller: UIViewController, cacheIdentifier: String? = nil, hideMenuButton: Bool = false) {
+	func embed(centerViewController controller: UIViewController, cacheIdentifier: String? = nil, hideMenuButton: Bool = false) {
 
 		if let id = cacheIdentifier {
 			controllersCache[id] = controller
 		}
 
-		addChildViewController(controller)
+		addChild(controller)
 		if let controller = controller as? UINavigationController {
 			prepare(centerControllerForContainment: controller, hideMenuButton: hideMenuButton)
 		}
@@ -101,14 +101,14 @@ public extension SideMenuController {
 
 		if centerViewController == nil {
 			centerViewController = controller
-			centerViewController.didMove(toParentViewController: self)
+			centerViewController.didMove(toParent: self)
 		} else {
-			centerViewController.willMove(toParentViewController: nil)
+			centerViewController.willMove(toParent: nil)
 
 			let completion: () -> () = {
 				self.centerViewController.view.removeFromSuperview()
-				self.centerViewController.removeFromParentViewController()
-				controller.didMove(toParentViewController: self)
+				self.centerViewController.removeFromParent()
+				controller.didMove(toParent: self)
 				self.centerViewController = controller
 			}
 
@@ -129,7 +129,7 @@ public extension SideMenuController {
 
 	- parameter forNavigationController: UINavigationController where the button should be hidden
 	*/
-	public func hideMenuButton(forNavigationController controller: UIViewController) {
+	func hideMenuButton(forNavigationController controller: UIViewController) {
 		if let controller = controller as? UINavigationController {
 			prepare(centerControllerForContainment: controller, hideMenuButton: true)
 		}
@@ -140,7 +140,7 @@ public extension SideMenuController {
 
 	- parameter forNavigationController: UINavigationController where the button should be shown
 	*/
-	public func showMenuButton(forNavigationController controller: UIViewController) {
+	func showMenuButton(forNavigationController controller: UIViewController) {
 		if let controller = controller as? UINavigationController {
 			prepare(centerControllerForContainment: controller, hideMenuButton: false)
 		}
@@ -154,7 +154,7 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
 	// MARK: Public
 
 	open weak var delegate: SideMenuControllerDelegate?
-	open static var preferences: Preferences = Preferences()
+	public static var preferences: Preferences = Preferences()
 	internal(set) open var sidePanelVisible = false
 
 	// MARK: Internal
@@ -206,7 +206,7 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
 
 	open override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
-		NotificationCenter.default.addObserver(self, selector: #selector(SideMenuController.repositionViews), name: .UIApplicationWillChangeStatusBarFrame, object: UIApplication.shared)
+		NotificationCenter.default.addObserver(self, selector: #selector(SideMenuController.repositionViews), name: UIApplication.willChangeStatusBarFrameNotification, object: UIApplication.shared)
 	}
 
 	override open func viewWillDisappear(_ animated: Bool) {
@@ -227,7 +227,7 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
 
 	// MARK: - Configurations -
 
-	func repositionViews() {
+	@objc func repositionViews() {
 
 		if sidePanelVisible {
 			toggle()
@@ -266,15 +266,15 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
 		sidePanel.clipsToBounds = true
 
 		if sidePanelPosition.isPositionedUnder {
-			view.sendSubview(toBack: sidePanel)
+			view.sendSubviewToBack(sidePanel)
 		} else {
 			centerPanelOverlay = UIView(frame: centerPanel.frame)
 			centerPanelOverlay.backgroundColor = _preferences.drawing.centerPanelOverlayColor
-			view.bringSubview(toFront: sidePanel)
+			view.bringSubviewToFront(sidePanel)
 		}
 
 		configureGestureRecognizers()
-		view.bringSubview(toFront: statusBarUnderlay)
+		view.bringSubviewToFront(statusBarUnderlay)
 	}
 
 	func configureGestureRecognizers() {
@@ -372,13 +372,13 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
 		statusBarUnderlay.alpha = alpha
 	}
 
-	func handleTap() {
+	@objc func handleTap() {
 		animate(toReveal: false)
 	}
 
 	// MARK:- UIGestureRecognizerDelegate -
 
-	open func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+	@objc open func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
 
 		switch gestureRecognizer {
 		case is UIScreenEdgePanGestureRecognizer:
