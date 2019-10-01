@@ -178,6 +178,12 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
 	var transitionInProgress = false
 	var flickVelocity: CGFloat = 0
 
+	/// Used for iOS 13+
+	var statusBarHidden = false
+
+	open override var prefersStatusBarHidden: Bool {
+		return statusBarHidden
+	}
 
 	lazy var sidePanelPosition: SidePanelPosition = {
 		return self._preferences.drawing.sidePanelPosition
@@ -295,8 +301,16 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
 		if statusBarHeight > DefaultStatusBarHeight && hidden == true {
 			return
 		}
-		
-		sbw?.set(hidden, withBehaviour: _preferences.animating.statusBarBehaviour)
+
+		statusBarHidden = hidden
+
+		if #available(iOS 13, *) {
+			UIView.animate(withDuration: 0.25, animations: {
+				self.setNeedsStatusBarAppearanceUpdate()
+			})
+		} else {
+			sbw?.set(hidden, withBehaviour: _preferences.animating.statusBarBehaviour)
+		}
 
 		if _preferences.animating.statusBarBehaviour == StatusBarBehaviour.horizontalPan {
 			if !hidden {
