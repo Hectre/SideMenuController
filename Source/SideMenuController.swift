@@ -145,6 +145,19 @@ public extension SideMenuController {
 			prepare(centerControllerForContainment: controller, hideMenuButton: false)
 		}
 	}
+
+    /**
+    Sets the supported orientation for the view
+
+    - parameter orientation: required orientation which is a type of UIInterfaceOrientationMask 
+    */
+    public func restrictOrientation(_ orientation: UIInterfaceOrientationMask) {
+        orientationLock = orientation
+    }
+    
+    open override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return orientationLock ?? .all
+    }
 }
 
 open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
@@ -180,6 +193,8 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
 
 	/// Used for iOS 13+
 	var statusBarHidden = false
+    
+    private var orientationLock = UIInterfaceOrientationMask.all
 
 	open override var prefersStatusBarHidden: Bool {
 		return statusBarHidden
