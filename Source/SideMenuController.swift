@@ -39,11 +39,16 @@ public extension SideMenuController {
         
         if !transitionInProgress {
             if !sidePanelVisible {
+                // Posting sideMenuWillAppear notification
+                NotificationCenter.default.post(name: SideMenuController.sideMenuWillAppear, object: nil)
                 
                 // Dismiss any showing keyboard in the centerViewController
                 self.centerViewController.view.endEditing(true)
                 
                 prepare(sidePanelForDisplay: true)
+            }else {
+                // Posting sideMenuWillDisappear notification
+                NotificationCenter.default.post(name: SideMenuController.sideMenuWillDisappear, object: nil)
             }
             
             animate(toReveal: !sidePanelVisible)
@@ -207,6 +212,9 @@ open class SideMenuController: UIViewController, UIGestureRecognizerDelegate {
     open override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return orientationLock
     }
+    
+    static let sideMenuWillAppear = Notification.Name("sideMenuWillAppear")
+    static let sideMenuWillDisappear = Notification.Name("sideMenuWillDisappear")
     
     // MARK:- View lifecycle -
     
