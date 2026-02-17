@@ -63,9 +63,18 @@ public extension UINavigationController {
 			return
 		}
 
-		let button = UIButton(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+		// Force the image to render as original to prevent iOS from applying tint colors
+		let originalImage = image.withRenderingMode(.alwaysOriginal)
+		
+		let button = UIButton(type: .custom)
+		button.frame = CGRect(x: 0, y: 0, width: 40, height: 40)
 		button.accessibilityIdentifier = SideMenuController.preferences.interaction.menuButtonAccessibilityIdentifier
-		button.setImage(image, for: .normal)
+		button.setImage(originalImage, for: .normal)
+		button.setImage(originalImage, for: .highlighted)
+		button.setImage(originalImage, for: .selected)
+		button.setImage(originalImage, for: .focused)
+		button.adjustsImageWhenHighlighted = false
+		button.tintColor = .clear  // Prevent any tint color from being applied
 		button.addTarget(sideMenuController, action: #selector(SideMenuController.toggle), for: .touchUpInside)
 		button.tag = tag
 
